@@ -5,25 +5,29 @@ from ..dataset import *
 
 
 def load_gt_roidb(dataset_name, image_set_name, root_path, dataset_path,
-                  flip=False):
+                  flip=False, rotate=False):
     """ load ground truth roidb """
     imdb = eval(dataset_name)(image_set_name, root_path, dataset_path)
     roidb = imdb.gt_roidb()
     print('roidb size', len(roidb))
     if flip:
         roidb = imdb.append_flipped_images(roidb)
+    if rotate:
+        roidb = imdb.append_rotated_images(roidb)
     print('flipped roidb size', len(roidb))
     return roidb
 
 
 def load_proposal_roidb(dataset_name, image_set_name, root_path, dataset_path,
-                        proposal='rpn', append_gt=True, flip=False):
+                        proposal='rpn', append_gt=True, flip=False, rotate=False):
     """ load proposal roidb (append_gt when training) """
     imdb = eval(dataset_name)(image_set_name, root_path, dataset_path)
     gt_roidb = imdb.gt_roidb()
     roidb = eval('imdb.' + proposal + '_roidb')(gt_roidb, append_gt)
     if flip:
         roidb = imdb.append_flipped_images(roidb)
+    if rotate:
+        roidb = imdb.append_rotated_images(roidb)
     return roidb
 
 
