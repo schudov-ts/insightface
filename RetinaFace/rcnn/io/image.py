@@ -65,6 +65,12 @@ def get_image(roidb, scale=False):
           im = cv2.imread(roi_rec['image'])
         if roidb[i]['flipped']:
             im = im[:, ::-1, :]
+        if roidb[i]['90']:
+            im = np.transpose(im[:, ::-1, :], (1,0,2))
+        elif roidb[i]['180']:
+            im = im[::-1, ::-1, :]
+        elif roidb[i]['270']:
+            im = np.transpose(im[::-1, :, :]. (1,0,2))
         new_rec = roi_rec.copy()
         if scale:
           scale_range = config.TRAIN.SCALE_RANGE
@@ -275,6 +281,12 @@ def get_crop_image1(roidb):
           im = cv2.imread(roi_rec['image'])
         if roidb[i]['flipped']:
             im = im[:, ::-1, :]
+        if roidb[i]['90']:
+            im = np.transpose(im[:, ::-1, :], (1,0,2))
+        elif roidb[i]['180']:
+            im = im[::-1, ::-1, :]
+        elif roidb[i]['270']:
+            im = np.transpose(im[::-1, :, :]. (1,0,2))
         if 'boxes_mask' in roi_rec:
           #im = im.astype(np.float32)
           boxes_mask = roi_rec['boxes_mask'].copy()
