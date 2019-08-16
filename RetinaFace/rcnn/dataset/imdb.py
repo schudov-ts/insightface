@@ -139,7 +139,10 @@ class IMDB(object):
                             'gt_overlaps': overlaps,
                             'max_classes': overlaps.argmax(axis=1),
                             'max_overlaps': overlaps.max(axis=1),
-                            'flipped': False})
+                            'flipped': False,
+                            '90': False,
+                            '180': False,
+                            '270': False}})
 
             # background roi => background class
             zero_indexes = np.where(roi_rec['max_overlaps'] == 0)[0]
@@ -172,7 +175,10 @@ class IMDB(object):
                      'gt_overlaps': roidb[i]['gt_overlaps'],
                      'max_classes': roidb[i]['max_classes'],
                      'max_overlaps': roidb[i]['max_overlaps'],
-                     'flipped': True}
+                     'flipped': True,
+                     '90': False,
+                     '180': False,
+                     '270': False}
             for k in roi_rec:
               if not k.startswith('boxes'):
                 continue
@@ -202,6 +208,79 @@ class IMDB(object):
             roidb.append(entry)
 
         self.image_set_index *= 2
+        return roidb
+    
+    def append_rotated_images(self, roidb):
+        """
+        append rotated images to an roidb
+        rotate boxes coordinates, images will be actually rotated when loading into network
+        :param roidb: [image_index]['boxes', 'gt_classes', 'gt_overlaps', 'flipped', '90', '180', '270']
+        :return: roidb: [image_index]['boxes', 'gt_classes', 'gt_overlaps', 'flipped', '90', '180', '270']
+        """
+        logger.info('%s append rotated images to roidb' % self.name)
+        assert self.num_images == len(roidb)
+        for i in range(self.num_images*3):
+          roi_rec = roidb[i]
+          h = roi_rec['height']
+          w = roi_rec['width']
+          for rotation in ['90', '180', '270']:
+            entry = {'image': roi_rec['image'],
+                     'stream': roi_rec['stream'],
+                     'height': roi_rec['height'],
+                     'width': roi_rec['width'],
+                     #'boxes': boxes,
+                     'gt_classes': roidb[i]['gt_classes'],
+                     'gt_overlaps': roidb[i]['gt_overlaps'],
+                     'max_classes': roidb[i]['max_classes'],
+                     'max_overlaps': roidb[i]['max_overlaps'],
+                     'flipped': False,
+                     '90': False,
+                     '180': False,
+                     '270': False}
+              entry[rotation] = True
+              for k in roi_rec:
+                if not k.startswith('boxes'):
+                  continue
+                boxes = roi_rec[k].copy()
+                oldx1 = boxes[:, 0].copy()
+                oldx2 = boxes[:, 2].copy()
+                oldy1 = boxes[:, 1].copy()
+                oldy2 = boxes[:, 3].copy()
+                if rotation == '90':
+                  boxes[:, 0] = oldy1
+                  boxes[:, 1] = w - oldx2 - 1
+                  boxes[:, 2] = oldy2
+                  boxes[:, 3] = w - oldx1 - 1
+                elif rotation == '180':
+                  boxes[:, 0] = w - oldx2 -1
+                  boxes[:, 1] = h - oldy2 -1
+                  boxes[:, 2] = w - oldx1 - 1
+                  boxes[:, 3] = h - oldy1 - 1
+                elif rotation == '270':
+                  boxes[:, 0] = h - oldy2 - 1
+                  boxes[:, 1] = oldx1
+                  boxes[:, 2] = h - oldy1 - 1
+                  boxes[:, 3] = oldx2
+                entry[k] = boxes
+              if 'landmarks' in roi_rec:
+                k = 'landmarks'
+                landmarks = roi_rec[k]
+                rlandmarks = landmarks.copy()
+                if rotation == '90':
+                  rlandmarks[:, :, 0] = landmarks[:, :, 1]
+                  rlandmarks[:, :, 1] = w - landmarks[:, :, 0] - 1
+                elif rotate == '180':
+                  rlandmarks[:, :, 0] = w - landmarks[:, :, 0] - 1  
+                  rlandmarks[:, :, 1] = h - landmarks[:, :, 1] - 1
+                elif rotate == '270':
+                  rlandmakrs[:, :, 0] = h - landmarks[:, :, 1] - 1
+                  rlandmarks[:, :, 1] = landmarks[:, :, 0]
+                entry[k] = flandmarks
+              if 'blur' in roi_rec:
+                entry['blur'] = roi_rec['blur']
+              roidb.append(entry)
+
+        self.image_set_index *= 4
         return roidb
 
     def evaluate_recall(self, roidb, candidate_boxes=None, thresholds=None):
