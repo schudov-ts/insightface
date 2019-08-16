@@ -304,6 +304,7 @@ def parse_args():
     parser.add_argument('--lr', help='base learning rate', default=default.lr, type=float)
     parser.add_argument('--lr_step', help='learning rate steps (in epoch)', default=default.lr_step, type=str)
     parser.add_argument('--no_ohem', help='disable online hard mining', action='store_true')
+    parser.add_argument('--rotate', help='enable rotation of images', action='store_true')
     args = parser.parse_args()
     return args
 
