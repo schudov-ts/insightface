@@ -5,7 +5,7 @@ from ..dataset import *
 
 
 def load_gt_roidb(dataset_name, image_set_name, root_path, dataset_path,
-                  flip=False):
+                  flip=False, rotate=False):
     """ load ground truth roidb """
     imdb = eval(dataset_name)(image_set_name, root_path, dataset_path)
     roidb = imdb.gt_roidb()
@@ -13,6 +13,9 @@ def load_gt_roidb(dataset_name, image_set_name, root_path, dataset_path,
     if flip:
         roidb = imdb.append_flipped_images(roidb)
     print('flipped roidb size', len(roidb))
+    if rotate:
+        roidb = imdb.append_rotated_images(roidb)
+    print('flipped and rotated roidb size', len(roidb))
     return roidb
 
 
