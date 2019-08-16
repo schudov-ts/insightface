@@ -247,6 +247,8 @@ class IMDB(object):
                 oldy1 = boxes[:, 1].copy()
                 oldy2 = boxes[:, 3].copy()
                 if rotation == '90':
+                  entry['height'] = w
+                  entry['width'] = h
                   boxes[:, 0] = oldy1
                   boxes[:, 1] = w - oldx2 - 1
                   boxes[:, 2] = oldy2
@@ -257,6 +259,8 @@ class IMDB(object):
                   boxes[:, 2] = w - oldx1 - 1
                   boxes[:, 3] = h - oldy1 - 1
                 elif rotation == '270':
+                  entry['height'] = w
+                  entry['width'] = h
                   boxes[:, 0] = h - oldy2 - 1
                   boxes[:, 1] = oldx1
                   boxes[:, 2] = h - oldy1 - 1
