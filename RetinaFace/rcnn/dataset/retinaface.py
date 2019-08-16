@@ -154,7 +154,9 @@ class retinaface(IMDB):
               'max_classes': overlaps.argmax(axis=1),
               'max_overlaps': overlaps.max(axis=1),
               'flipped': False,
-            }
+              '90': False,
+              '180': False,
+              '270': False}
             if len(boxes_mask)>0:
               boxes_mask = np.array(boxes_mask)
               roi['boxes_mask'] = boxes_mask
