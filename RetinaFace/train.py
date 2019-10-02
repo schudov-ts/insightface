@@ -96,10 +96,13 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch,
     for stride in config.RPN_FEAT_STRIDE:
         feat_sym.append(sym.get_internals()['face_rpn_cls_score_stride%s_output' % stride])
 
-
+    if args.mixed_precision:
+        dtype = 'float16'
+    else:
+        dtype = 'float32'
 
     train_data = CropLoader(feat_sym, roidb, batch_size=input_batch_size, shuffle=not args.no_shuffle,
-                                  ctx=ctx, work_load_list=args.work_load_list, dtype='float32')
+                                  ctx=ctx, work_load_list=args.work_load_list, dtype=dtype)
 
 
     # infer max shape
@@ -210,7 +213,13 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch,
     end_epoch = 10000
     logger.info('lr %f lr_epoch_diff %s lr_steps %s' % (lr, lr_epoch_diff, lr_steps))
     # optimizer
-    opt = optimizer.SGD(learning_rate=lr, momentum=0.9, wd=0.0005, rescale_grad=1.0/len(ctx), clip_gradient=None)
+    if args.mixed_precision:
+        rescale_grad = 1.0/(len(ctx)*512)
+        multi_precision = True
+    else:
+        rescale_grad=1.0/len(ctx)
+        multi_precision = False
+    opt = optimizer.SGD(learning_rate=lr, momentum=0.9, wd=0.0005, rescale_grad=rescale_grad, multi_precision=multi_precision, clip_gradient=None)
     initializer=mx.init.Xavier()
     #initializer = mx.init.Xavier(rnd_type='gaussian', factor_type="out", magnitude=2) #resnet style
 
@@ -305,6 +314,7 @@ def parse_args():
     parser.add_argument('--lr_step', help='learning rate steps (in epoch)', default=default.lr_step, type=str)
     parser.add_argument('--no_ohem', help='disable online hard mining', action='store_true')
     parser.add_argument('--rotate', help='enable rotation of images', action='store_true')
+    parser.add_argument('--mixed_precision', help='enable mixed precision', action='store_true')
     args = parser.parse_args()
     return args
 
