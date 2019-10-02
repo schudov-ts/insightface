@@ -99,7 +99,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch,
 
 
     train_data = CropLoader(feat_sym, roidb, batch_size=input_batch_size, shuffle=not args.no_shuffle,
-                                  ctx=ctx, work_load_list=args.work_load_list)
+                                  ctx=ctx, work_load_list=args.work_load_list, dtype='float32')
 
 
     # infer max shape
