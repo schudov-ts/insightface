@@ -316,7 +316,7 @@ def get_sym_conv(data, sym):
     #return {8: m1, 16:m2, 32: m3}
     return ret
 
-def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0, shared_vars = None):
+def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0, shared_vars = None, mixed_presicion=False):
     A = config.NUM_ANCHORS
     bbox_pred_len = 4
     landmark_pred_len = 10
@@ -400,11 +400,16 @@ def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0, shared_v
       #else:
       #  label, bbox_weight, landmark_weight = mx.sym.Custom(op_type='rpn_fpn_ohem2', stride=int(stride), cls_score=rpn_cls_score_reshape, bbox_weight = bbox_weight, landmark_weight=landmark_weight, labels = label)
     #cls loss
+    if mixed_precision:
+        grad_scale = lr_mult*512
+        rpn_cls_score_reshape = mx.sym.Cast(data=rpn_cls_score_reshape, dtype=np.float32)
+    else:
+        grad_scale = lr_mult
     rpn_cls_prob = mx.symbol.SoftmaxOutput(data=rpn_cls_score_reshape,
                                            label=label,
                                            multi_output=True,
                                            normalization='valid', use_ignore=True, ignore_label=-1,
-                                           grad_scale = lr_mult,
+                                           grad_scale = grad_scale,
                                            name='%s_rpn_cls_prob_stride%d'%(prefix,stride))
     ret_group.append(rpn_cls_prob)
     ret_group.append(mx.sym.BlockGrad(label))
@@ -441,9 +446,10 @@ def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0, shared_v
       pass
     return ret_group
 
-def get_sym_train(sym):
+def get_sym_train(sym, mixed_precision=False):
     data = mx.symbol.Variable(name="data")
-
+    if mixed_precision:
+        data = mx.sym.Cast(data=data, dtype=np.float16)
     # shared convolutional layers
     conv_fpn_feat = get_sym_conv(data, sym)
     ret_group = []
@@ -476,12 +482,12 @@ def get_sym_train(sym):
       shared_vars.append( [None, None] )
 
     for stride in config.RPN_FEAT_STRIDE:
-      ret = get_out(conv_fpn_feat, 'face', stride, config.FACE_LANDMARK, lr_mult=1.0, shared_vars = shared_vars)
+      ret = get_out(conv_fpn_feat, 'face', stride, config.FACE_LANDMARK, lr_mult=1.0, shared_vars = shared_vars, mixed_presicion=mixed_precision)
       ret_group += ret
       if config.HEAD_BOX:
         assert not config.SHARE_WEIGHT_BBOX and not config.SHARE_WEIGHT_LANDMARK
         shared_vars = [ [None, None], [None, None], [None, None] ]
-        ret = get_out(conv_fpn_feat, 'head', stride, False, lr_mult=0.5, shared_vars = shared_vars)
+        ret = get_out(conv_fpn_feat, 'head', stride, False, lr_mult=0.5, shared_vars = shared_vars, mixed_presicion=mixed_precision)
         ret_group += ret
 
     return mx.sym.Group(ret_group)
