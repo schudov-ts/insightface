@@ -405,8 +405,8 @@ def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0):
       ret_group.append(mx.sym.BlockGrad(landmark_weight))
     return ret_group
 
-def get_resnet_train(sym):
-    return get_sym_train(sym)
+def get_resnet_train(sym, mixed_precision=False):
+    return get_sym_train(sym, mixed_precision=mixed_precision)
     #data = mx.symbol.Variable(name="data")
     ## shared convolutional layers
     #conv_fpn_feat, conv_fpn_feat2 = get_resnet_conv(data, sym)
