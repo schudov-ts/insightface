@@ -316,7 +316,7 @@ def get_sym_conv(data, sym):
     #return {8: m1, 16:m2, 32: m3}
     return ret
 
-def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0, shared_vars = None, mixed_presicion=False):
+def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0, shared_vars = None, mixed_presicion=False, modified=False):
     A = config.NUM_ANCHORS
     bbox_pred_len = 4
     landmark_pred_len = 10
@@ -446,7 +446,7 @@ def get_out(conv_fpn_feat, prefix, stride, landmark=False, lr_mult=1.0, shared_v
       pass
     return ret_group
 
-def get_sym_train(sym, mixed_precision=False):
+def get_sym_train(sym, mixed_precision=False, modified=False):
     data = mx.symbol.Variable(name="data")
     if mixed_precision:
         data = mx.sym.Cast(data=data, dtype=np.float16)
@@ -482,12 +482,12 @@ def get_sym_train(sym, mixed_precision=False):
       shared_vars.append( [None, None] )
 
     for stride in config.RPN_FEAT_STRIDE:
-      ret = get_out(conv_fpn_feat, 'face', stride, config.FACE_LANDMARK, lr_mult=1.0, shared_vars = shared_vars, mixed_presicion=mixed_precision)
+      ret = get_out(conv_fpn_feat, 'face', stride, config.FACE_LANDMARK, lr_mult=1.0, shared_vars = shared_vars, mixed_presicion=mixed_precision, modified=modified)
       ret_group += ret
       if config.HEAD_BOX:
         assert not config.SHARE_WEIGHT_BBOX and not config.SHARE_WEIGHT_LANDMARK
         shared_vars = [ [None, None], [None, None], [None, None] ]
-        ret = get_out(conv_fpn_feat, 'head', stride, False, lr_mult=0.5, shared_vars = shared_vars, mixed_presicion=mixed_precision)
+        ret = get_out(conv_fpn_feat, 'head', stride, False, lr_mult=0.5, shared_vars = shared_vars, mixed_presicion=mixed_precision, modified=modified)
         ret_group += ret
 
     return mx.sym.Group(ret_group)
