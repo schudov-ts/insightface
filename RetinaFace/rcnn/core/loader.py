@@ -15,7 +15,7 @@ from rcnn.io.rpn import get_rpn_testbatch, get_rpn_batch, assign_anchor_fpn, get
 
 class CropLoader(mx.io.DataIter):
     def __init__(self, feat_sym, roidb, batch_size=1, shuffle=False, ctx=None, work_load_list=None,
-                 aspect_grouping=False, dtype='float32'):
+                 aspect_grouping=False):
         """
         This Iter will provide roi data to Fast R-CNN network
         :param feat_sym: to infer shape of assign_output
@@ -29,8 +29,6 @@ class CropLoader(mx.io.DataIter):
         """
         super(CropLoader, self).__init__()
         
-        self.dtype=dtype
-
         # save parameters as properties
         self.feat_sym = feat_sym
         self.roidb = roidb
@@ -255,10 +253,7 @@ class CropLoader(mx.io.DataIter):
             #print('label vstack', key, pad, len(label_list), file=sys.stderr)
             all_label[key] = tensor_vstack([batch[key] for batch in label_list], pad=pad)
         
-        if self.dtype == 'float16':
-            self.data = [mx.nd.array(all_data[key], dtype=self.dtype) for key in self.data_name]
-        else:
-            self.data = [mx.nd.array(all_data[key]) for key in self.data_name]
+        self.data = [mx.nd.array(all_data[key]) for key in self.data_name]
         self.label = [mx.nd.array(all_label[key]) for key in self.label_name]
         #print(self._times)
 
