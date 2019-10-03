@@ -90,19 +90,15 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch,
         #    arg_params[_k] = mx.nd.zeros(shape=arg_shape_dict[_k])
         #    print('init %s with zero'%(_k))
 
-    sym = eval('get_' + args.network + '_train')(sym)
+    sym = eval('get_' + args.network + '_train')(sym, args.mixed_precision)
     #print(sym.get_internals())
     feat_sym = []
     for stride in config.RPN_FEAT_STRIDE:
         feat_sym.append(sym.get_internals()['face_rpn_cls_score_stride%s_output' % stride])
 
-    if args.mixed_precision:
-        dtype = 'float16'
-    else:
-        dtype = 'float32'
 
     train_data = CropLoader(feat_sym, roidb, batch_size=input_batch_size, shuffle=not args.no_shuffle,
-                                  ctx=ctx, work_load_list=args.work_load_list, dtype=dtype)
+                                  ctx=ctx, work_load_list=args.work_load_list)
 
 
     # infer max shape
