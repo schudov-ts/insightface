@@ -56,7 +56,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch,
     # load dataset and prepare imdb for training
     image_sets = [iset for iset in args.image_set.split('+')]
     roidbs = [load_gt_roidb(args.dataset, image_set, args.root_path, args.dataset_path,
-                            flip=not args.no_flip, rotate=args.rotate)
+                            flip=not args.no_flip, rotate=args.rotate, direction=args.modified)
               for image_set in image_sets]
     #roidb = merge_roidb(roidbs)
     #roidb = filter_roidb(roidb)
@@ -90,7 +90,7 @@ def train_net(args, ctx, pretrained, epoch, prefix, begin_epoch, end_epoch,
         #    arg_params[_k] = mx.nd.zeros(shape=arg_shape_dict[_k])
         #    print('init %s with zero'%(_k))
 
-    sym = eval('get_' + args.network + '_train')(sym, args.mixed_precision)
+    sym = eval('get_' + args.network + '_train')(sym, args.mixed_precision, args.modified)
     #print(sym.get_internals())
     feat_sym = []
     for stride in config.RPN_FEAT_STRIDE:
@@ -311,6 +311,7 @@ def parse_args():
     parser.add_argument('--no_ohem', help='disable online hard mining', action='store_true')
     parser.add_argument('--rotate', help='enable rotation of images', action='store_true')
     parser.add_argument('--mixed_precision', help='enable mixed precision', action='store_true')
+    parser.add_argument('--modified', help='trained modified version', actiaon='store_true')
     args = parser.parse_args()
     return args
 
