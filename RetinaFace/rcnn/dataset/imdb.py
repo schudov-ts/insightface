@@ -142,7 +142,7 @@ class IMDB(object):
                             'flipped': False,
                             '90': False,
                             '180': False,
-                            '270': False}})
+                            '270': False})
 
             # background roi => background class
             zero_indexes = np.where(roi_rec['max_overlaps'] == 0)[0]
@@ -218,13 +218,13 @@ class IMDB(object):
         :return: roidb: [image_index]['boxes', 'gt_classes', 'gt_overlaps', 'flipped', '90', '180', '270']
         """
         logger.info('%s append rotated images to roidb' % self.name)
-        assert self.num_images == len(roidb)
+        #assert self.num_images == len(roidb)
         for i in range(self.num_images*3):
           roi_rec = roidb[i]
           h = roi_rec['height']
           w = roi_rec['width']
           for rotation in ['90', '180', '270']:
-            entry = {'image': roi_rec['image'],
+              entry = {'image': roi_rec['image'],
                      'stream': roi_rec['stream'],
                      'height': roi_rec['height'],
                      'width': roi_rec['width'],
@@ -273,13 +273,13 @@ class IMDB(object):
                 if rotation == '90':
                   rlandmarks[:, :, 0] = landmarks[:, :, 1]
                   rlandmarks[:, :, 1] = w - landmarks[:, :, 0] - 1
-                elif rotate == '180':
+                elif rotation == '180':
                   rlandmarks[:, :, 0] = w - landmarks[:, :, 0] - 1  
                   rlandmarks[:, :, 1] = h - landmarks[:, :, 1] - 1
-                elif rotate == '270':
-                  rlandmakrs[:, :, 0] = h - landmarks[:, :, 1] - 1
+                elif rotation == '270':
+                  rlandmarks[:, :, 0] = h - landmarks[:, :, 1] - 1
                   rlandmarks[:, :, 1] = landmarks[:, :, 0]
-                entry[k] = flandmarks
+                entry[k] = rlandmarks
               if 'blur' in roi_rec:
                 entry['blur'] = roi_rec['blur']
               roidb.append(entry)

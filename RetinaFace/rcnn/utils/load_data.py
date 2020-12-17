@@ -12,6 +12,7 @@ def load_gt_roidb(dataset_name, image_set_name, root_path, dataset_path,
     print('roidb size', len(roidb))
     if flip:
         roidb = imdb.append_flipped_images(roidb)
+    print('roidb size after_flip', len(roidb))
     if rotate:
         roidb = imdb.append_rotated_images(roidb)
     print('flipped roidb size', len(roidb))

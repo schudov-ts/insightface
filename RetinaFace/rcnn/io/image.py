@@ -70,7 +70,7 @@ def get_image(roidb, scale=False):
         elif roidb[i]['180']:
             im = im[::-1, ::-1, :]
         elif roidb[i]['270']:
-            im = np.transpose(im[::-1, :, :]. (1,0,2))
+            im = np.transpose(im[::-1, :, :], (1,0,2))
         new_rec = roi_rec.copy()
         if scale:
           scale_range = config.TRAIN.SCALE_RANGE
@@ -286,7 +286,7 @@ def get_crop_image1(roidb):
         elif roidb[i]['180']:
             im = im[::-1, ::-1, :]
         elif roidb[i]['270']:
-            im = np.transpose(im[::-1, :, :]. (1,0,2))
+            im = np.transpose(im[::-1, :, :], (1,0,2))
         if 'boxes_mask' in roi_rec:
           #im = im.astype(np.float32)
           boxes_mask = roi_rec['boxes_mask'].copy()
